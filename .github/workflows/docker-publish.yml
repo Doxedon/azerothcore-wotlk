@@ -6,7 +6,6 @@ on:
   workflow_dispatch:
 
 env:
-  # This stops the harmless Node 20 deprecation warnings in the logs
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -29,14 +28,6 @@ jobs:
           sed -i 's/instanceData = sEluna->GetInstanceData/*instanceData = sEluna->GetInstanceData/' modules/mod-eluna/src/ElunaLuaEngine_SC.cpp
           sed -i '/OnBeforeCreateInstanceScript/s/ override//' modules/mod-eluna/src/ElunaLuaEngine_SC.cpp
           sed -i '/CanExecuteCommand/s/ override//' modules/mod-eluna/src/ElunaLuaEngine_SC.cpp
-
-      # --- PATCH 2: PREVENT OUT OF MEMORY CRASHES ---
-      - name: Create Swap Space
-        run: |
-          sudo fallocate -l 10G /swapfile
-          sudo chmod 600 /swapfile
-          sudo mkswap /swapfile
-          sudo swapon /swapfile
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
