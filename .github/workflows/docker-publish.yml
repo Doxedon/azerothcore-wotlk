@@ -1,0 +1,41 @@
+name: Build and Publish
+
+on:
+  push:
+    branches: [ "Playerbot" ] # Ensure this matches your branch name exactly
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive # THIS IS CRUCIAL: It pulls in the modules you added
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Worldserver
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/worldserver/Dockerfile # Adjust this path if your Dockerfile is elsewhere
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-worldserver:latest
+
+      - name: Build and push Authserver
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/authserver/Dockerfile # Adjust this path if your Dockerfile is elsewhere
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-authserver:latest
