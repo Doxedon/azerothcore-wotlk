@@ -3,6 +3,7 @@ name: Build and Publish
 on:
   push:
     branches: [ "Playerbot" ]
+  workflow_dispatch: # This line allows you to manually trigger the workflow from the Actions tab!
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -27,19 +28,32 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # 1. Database Importer (Required to initialize SQL on first run)
+      - name: Build and push db-import
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/docker/Dockerfile
+          target: db-import
+          push: true
+          tags: ghcr.io/doxedon/ac-wotlk-db-import:playerbot
+
+      # 2. Worldserver Image
       - name: Build and push Worldserver
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./docker/worldserver/Dockerfile
+          file: apps/docker/Dockerfile
+          target: worldserver
           push: true
-          # The | downcase filter forces everything to lowercase
-          tags: ghcr.io/${{ github.repository_owner | downcase }}/${{ github.event.repository.name | downcase }}-worldserver:latest
+          tags: ghcr.io/doxedon/ac-wotlk-worldserver:playerbot
 
+      # 3. Authserver Image
       - name: Build and push Authserver
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./docker/authserver/Dockerfile
+          file: apps/docker/Dockerfile
+          target: authserver
           push: true
-          tags: ghcr.io/${{ github.repository_owner | downcase }}/${{ github.event.repository.name | downcase }}-authserver:latest
+          tags: ghcr.io/doxedon/ac-wotlk-authserver:playerbot
