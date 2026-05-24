@@ -2,7 +2,10 @@ name: Build and Publish
 
 on:
   push:
-    branches: [ "Playerbot" ] # Ensure this matches your branch name exactly
+    branches: [ "Playerbot" ]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
@@ -15,7 +18,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          submodules: recursive # THIS IS CRUCIAL: It pulls in the modules you added
+          submodules: recursive
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -28,14 +31,15 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./docker/worldserver/Dockerfile # Adjust this path if your Dockerfile is elsewhere
+          file: ./docker/worldserver/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-worldserver:latest
+          # The | downcase filter forces everything to lowercase
+          tags: ghcr.io/${{ github.repository_owner | downcase }}/${{ github.event.repository.name | downcase }}-worldserver:latest
 
       - name: Build and push Authserver
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./docker/authserver/Dockerfile # Adjust this path if your Dockerfile is elsewhere
+          file: ./docker/authserver/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-authserver:latest
+          tags: ghcr.io/${{ github.repository_owner | downcase }}/${{ github.event.repository.name | downcase }}-authserver:latest
