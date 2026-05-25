@@ -2,7 +2,7 @@ name: Build and Publish
 
 on:
   push:
-    branches: [ "Playerbot" ]
+    branches: [ "master" ]
   workflow_dispatch:
 
 env:
@@ -21,14 +21,6 @@ jobs:
         with:
           submodules: recursive
 
-      # --- PATCH 1: FIX C++ API DIVERGENCE BETWEEN ELUNA & PLAYERBOTS ---
-      - name: Patch Eluna for Playerbot API
-        run: |
-          sed -i 's/InstanceScript\* instanceData/InstanceScript** instanceData/' modules/mod-eluna/src/ElunaLuaEngine_SC.cpp
-          sed -i 's/instanceData = sEluna->GetInstanceData/*instanceData = sEluna->GetInstanceData/' modules/mod-eluna/src/ElunaLuaEngine_SC.cpp
-          sed -i '/OnBeforeCreateInstanceScript/s/ override//' modules/mod-eluna/src/ElunaLuaEngine_SC.cpp
-          sed -i '/CanExecuteCommand/s/ override//' modules/mod-eluna/src/ElunaLuaEngine_SC.cpp
-
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -44,7 +36,7 @@ jobs:
           file: apps/docker/Dockerfile
           target: db-import
           push: true
-          tags: ghcr.io/doxedon/ac-wotlk-db-import:playerbot
+          tags: ghcr.io/doxedon/ac-wotlk-db-import:master
 
       # 2. Worldserver Image
       - name: Build and push Worldserver
@@ -54,7 +46,7 @@ jobs:
           file: apps/docker/Dockerfile
           target: worldserver
           push: true
-          tags: ghcr.io/doxedon/ac-wotlk-worldserver:playerbot
+          tags: ghcr.io/doxedon/ac-wotlk-worldserver:master
 
       # 3. Authserver Image
       - name: Build and push Authserver
@@ -64,4 +56,4 @@ jobs:
           file: apps/docker/Dockerfile
           target: authserver
           push: true
-          tags: ghcr.io/doxedon/ac-wotlk-authserver:playerbot
+          tags: ghcr.io/doxedon/ac-wotlk-authserver:master
